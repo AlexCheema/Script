@@ -29,4 +29,4 @@ template SimpleMM() {
     i++;
  }
 
- component main = SimpleMM();
+ component main { public [currentTick, myTick, myLiquidity, availableLiquidity] } = SimpleMM();
