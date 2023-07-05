@@ -1,14 +1,18 @@
 const snarkjs = require("snarkjs");
 const fs = require("fs");
+const { mapActions } = require("./action");
 
 async function run() {
-    const { proof, publicSignals } = await snarkjs.plonk.fullProve({currentTick: 20, myTick: 21, availableLiquidity: 5}, "../circuits/simplemm_js/simplemm.wasm", "../circuits/simplemm_final.zkey");
+    const { proof, publicSignals } = await snarkjs.plonk.fullProve(
+        { currentTick: 20, myTick: 21, myLiquidity: 8, availableLiquidity: 5 },
+        "../circuits/simplemm_js/simplemm.wasm", "../circuits/simplemm_final.zkey"
+    );
 
-    console.log("Proof: ");
-    console.log(JSON.stringify(proof, null, 1));
+    const NUM_ACTIONS = 8;
+    const actions = mapActions(publicSignals.slice(0, NUM_ACTIONS * 4));
+    console.log(actions);
 
     const vKey = JSON.parse(fs.readFileSync("../circuits/verification_key.json"));
-
     const res = await snarkjs.plonk.verify(vKey, publicSignals, proof);
 
     if (res === true) {
