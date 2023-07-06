@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
 
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
@@ -19,7 +20,7 @@ contract StrategyVault {
         // TODO: we need an optimistic check, i.e. if anything changed in the inputs we revert
         require(IUniswapV3Pool(poolAddress).slot0.tick == _pubSignals[32], "Tick changed");
 
-        for (uint i = 0; i < 8; i++) {
+        for (uint256 i = 0; i < 8; i++) {
             uint256 actionType = _pubSignals[i * 4];
             if (actionType == 0) break;
 
@@ -29,8 +30,7 @@ contract StrategyVault {
                 uint128 amount = uint128(_pubSignals[i * 4 + 3]);
 
                 IUniswapV3Pool(poolAddress).mint(address(this), tickLower, tickUpper, amount, new bytes(0));
-            }
-            else if (actionType == 2) {
+            } else if (actionType == 2) {
                 int24 tickLower = int24(int256(_pubSignals[i * 4 + 1]));
                 int24 tickUpper = int24(int256(_pubSignals[i * 4 + 2]));
                 uint128 amount = uint128(_pubSignals[i * 4 + 3]);
@@ -41,5 +41,4 @@ contract StrategyVault {
 
         return true;
     }
-
 }

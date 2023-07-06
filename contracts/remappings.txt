@@ -1,1 +1,2 @@
-v3-core/=lib/v3-core/
+hardhat/=lib/hardhat/packages/hardhat-core/
+@uniswap/v3-core=lib/v3-core/
