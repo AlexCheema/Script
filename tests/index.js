@@ -4,10 +4,25 @@ const { mapActions } = require("./action");
 const { getPoolState } = require("./pool");
 
 async function run() {
+    const state = await getPoolState("0x6337b3caf9c5236c7f3d1694410776119edaf9fa", "0x54f3a4f7a85c70c0c0e99f42f92b0ac34a18c534");
+
+    if (state.positions.length > 1) {
+        throw new Error(`This strategy only handles up to 1 existing liquidity position but found ${state.positions.length}`);
+    }
+
     const { proof, publicSignals } = await snarkjs.plonk.fullProve(
-        { currentTick: 20, myTick: 21, myLiquidity: 8, availableLiquidity: 5 },
+        {
+            currentTick: state.tick,
+            tickSpacing: state.tickSpacing,
+
+            myTick: state.positions?.[0]?.tickLower?.tickIdx ?? "0",
+            myLiquidity: state.positions?.[0]?.liquidity ?? "0",
+            availableLiquidity: "1000000"
+        },
         "../circuits/simplemm_js/simplemm.wasm", "../circuits/simplemm_final.zkey"
     );
+
+    console.log(publicSignals)
 
     const NUM_ACTIONS = 8;
     const actions = mapActions(publicSignals.slice(0, NUM_ACTIONS * 4));
@@ -21,12 +36,8 @@ async function run() {
     } else {
         console.log("Invalid proof");
     }
-
 }
 
-getPoolState("0x6337b3caf9c5236c7f3d1694410776119edaf9fa", "0x54f3a4f7a85c70c0c0e99f42f92b0ac34a18c534").then((state) => {
-    console.log(JSON.stringify(state, null, 2));
-});
 run().then(() => {
-    //process.exit(0);
+    process.exit(0);
 });

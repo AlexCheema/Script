@@ -6,11 +6,19 @@ const SUBGRAPH_URL = {
     "MAINNET": "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3",
 }[NETWORK];
 
+const feeTierToTickSpacing = {
+    100: 1,
+    500: 10,
+    3000: 60,
+    10000: 200
+};
+
 async function getPoolState(pool, owner) {
     const query = `
     {
         pool(id: "${pool}") {
             tick
+            feeTier
             sqrtPrice
         }
         positions(where: {
@@ -31,13 +39,13 @@ async function getPoolState(pool, owner) {
     `;
 
     const result = await axios.post(SUBGRAPH_URL, { query });
-    console.log(result.data);
 
     if (!result.data?.data?.positions || !result.data?.data?.pool) {
         throw new Error(`Bad pool state response: ${JSON.stringify(result.data)}`);
     }
 
     return {
+        tickSpacing: feeTierToTickSpacing[result.data.data.pool.feeTier] ?? 1,
         tick: result.data.data.pool.tick,
         sqrtPrice: result.data.data.pool.sqrtPrice,
         positions: result.data?.data?.positions ?? [],
