@@ -1,6 +1,7 @@
 const snarkjs = require("snarkjs");
 const fs = require("fs");
 const { mapActions } = require("./action");
+const { getPoolState } = require("./pool");
 
 async function run() {
     const { proof, publicSignals } = await snarkjs.plonk.fullProve(
@@ -23,6 +24,9 @@ async function run() {
 
 }
 
+getPoolState("0x6337b3caf9c5236c7f3d1694410776119edaf9fa", "0x54f3a4f7a85c70c0c0e99f42f92b0ac34a18c534").then((state) => {
+    console.log(JSON.stringify(state, null, 2));
+});
 run().then(() => {
-    process.exit(0);
+    //process.exit(0);
 });
