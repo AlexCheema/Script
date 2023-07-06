@@ -1,7 +1,7 @@
 [submodule "contracts/lib/v3-core"]
 	path = contracts/lib/v3-core
 	url = https://github.com/uniswap/v3-core
-	branch = v1.0.0
+	branch = main
 [submodule "contracts/lib/hardhat"]
 	path = contracts/lib/hardhat
 	url = https://github.com/nomiclabs/hardhat

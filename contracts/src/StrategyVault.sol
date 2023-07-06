@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.17;
 
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "./Verifier.sol";
@@ -18,7 +18,9 @@ contract StrategyVault {
         require(result, "Invalid proof");
 
         // TODO: we need an optimistic check, i.e. if anything changed in the inputs we revert
-        require(IUniswapV3Pool(poolAddress).slot0.tick == _pubSignals[32], "Tick changed");
+        (, int24 tick,,,,,) = IUniswapV3Pool(poolAddress).slot0();
+        require(tick > 0, "Cannot convert negative value to Uint256");
+        require(uint256(int256(tick)) == _pubSignals[32], "Tick changed");
 
         for (uint256 i = 0; i < 8; i++) {
             uint256 actionType = _pubSignals[i * 4];
