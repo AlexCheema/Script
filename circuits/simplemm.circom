@@ -14,18 +14,18 @@ template SimpleMM() {
 
     assert(currentTick != myTick);
 
-    component mint = Mint();
-    mint.tickLower <== currentTick;
-    mint.tickUpper <== currentTick;
-    mint.amount <== availableLiquidity;
-    actions[i] <== mint.action;
-    i++;
-
     component burn = Burn();
     burn.tickLower <== myTick;
     burn.tickUpper <== myTick;
     burn.amount <== myLiquidity;
     actions[i] <== burn.action;
+    i++;
+    
+    component mint = Mint();
+    mint.tickLower <== currentTick;
+    mint.tickUpper <== currentTick;
+    mint.amount <== availableLiquidity;
+    actions[i] <== mint.action;
     i++;
  }
 
