@@ -18,6 +18,10 @@ contract StrategyVault {
         require(result, "Invalid proof");
 
         // TODO: we need an optimistic check, i.e. if anything changed in the inputs we revert
+        // * currentTick - DONE (see below require)
+        // * myTick
+        // * myLiquidity
+        // * availableLiquidity (note: we might want to change this for tokenBalanceA and tokenBalanceB)
         (, int24 tick,,,,,) = IUniswapV3Pool(poolAddress).slot0();
         require(tick > 0, "Cannot convert negative value to Uint256");
         require(uint256(int256(tick)) == _pubSignals[32], "Tick changed");
