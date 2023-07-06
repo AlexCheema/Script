@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.17;
+// This was needed for deploying UniV3 pool, would be good to update when possible
+pragma solidity ^0.7.6;
 
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "./Verifier.sol";
@@ -13,7 +14,7 @@ contract StrategyVault {
         poolAddress = _poolAddress;
     }
 
-    function execute(uint256[24] calldata _proof, uint256[36] calldata _pubSignals) external returns (bool) {
+    function verifyActions(uint256[24] calldata _proof, uint256[36] calldata _pubSignals) public view {
         bool result = PlonkVerifier(verifierContractAddress).verifyProof(_proof, _pubSignals);
         require(result, "Invalid proof");
 
@@ -23,8 +24,12 @@ contract StrategyVault {
         // * myLiquidity
         // * availableLiquidity (note: we might want to change this for tokenBalanceA and tokenBalanceB)
         (, int24 tick,,,,,) = IUniswapV3Pool(poolAddress).slot0();
-        require(tick > 0, "Cannot convert negative value to Uint256");
+        require(tick >= 0, "Cannot convert negative value to Uint256");
         require(uint256(int256(tick)) == _pubSignals[32], "Tick changed");
+    }
+
+    function execute(uint256[24] calldata _proof, uint256[36] calldata _pubSignals) external returns (bool) {
+        verifyActions(_proof, _pubSignals);
 
         for (uint256 i = 0; i < 8; i++) {
             uint256 actionType = _pubSignals[i * 4];

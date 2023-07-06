@@ -22,7 +22,10 @@ async function run() {
         "../circuits/simplemm_js/simplemm.wasm", "../circuits/simplemm_final.zkey"
     );
 
-    console.log(publicSignals)
+    // Convert the data into Solidity calldata that can be sent as a transaction
+    const calldataBlob = await snarkjs.plonk.exportSolidityCallData(proof, publicSignals);
+    const calldata = calldataBlob.split(',');
+    console.log("Calldata parsed", calldata);
 
     const NUM_ACTIONS = 8;
     const actions = mapActions(publicSignals.slice(0, NUM_ACTIONS * 4));
