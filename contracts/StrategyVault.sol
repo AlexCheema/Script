@@ -12,9 +12,11 @@ contract StrategyVault {
         poolAddress = _poolAddress;
     }
 
-    function execute(uint256[24] calldata _proof, uint256[36] calldata _pubSignals)  external returns (bool) {
+    function execute(uint256[24] calldata _proof, uint256[36] calldata _pubSignals) external returns (bool) {
         bool result = PlonkVerifier(verifierContractAddress).verifyProof(_proof, _pubSignals);
         require(result, "Invalid proof");
+
+        // TODO: we need an optimistic check, i.e. if anything changed in the inputs we revert
 
         for (uint i = 0; i < 8; i++) {
             uint256 actionType = _pubSignals[i * 4];
