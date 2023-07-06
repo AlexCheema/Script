@@ -17,6 +17,7 @@ contract StrategyVault {
         require(result, "Invalid proof");
 
         // TODO: we need an optimistic check, i.e. if anything changed in the inputs we revert
+        require(IUniswapV3Pool(poolAddress).slot0.tick == _pubSignals[32], "Tick changed");
 
         for (uint i = 0; i < 8; i++) {
             uint256 actionType = _pubSignals[i * 4];
