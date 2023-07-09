@@ -7,6 +7,8 @@ import "../src/StrategyVault.sol";
 import "@uniswap/v3-core/contracts/UniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/UniswapV3Factory.sol";
 import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
+import "./TestERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract StrategyVaultTest is Test {
     uint256[24] proof = [
@@ -80,19 +82,66 @@ contract StrategyVaultTest is Test {
     UniswapV3Factory factory;
     UniswapV3PoolDeployer deployer;
     UniswapV3Pool pool;
+    Token0 token0;
+    Token1 token1;
 
     function setUp() public {
         factory = new UniswapV3Factory();
-        pool = UniswapV3Pool(factory.createPool(address(2), address(3), 500));
+        token0 = new Token0();
+        token1 = new Token1();
+        pool = UniswapV3Pool(factory.createPool(address(token0), address(token1), 500));
         uint160 sqrtPriceX96 = TickMath.getSqrtRatioAtTick(92143);
         // Match tick from public signals
         pool.initialize(sqrtPriceX96);
 
         verifier = new PlonkVerifier();
-        vault = new StrategyVault(address(verifier), address(pool));
+        vault = new StrategyVault(address(verifier), address(pool), address(token0), address(token1));
     }
 
     function test_verifyActions() public view {
         vault.verifyActions(proof, publicSignals);
+    }
+
+    function test_callback() public {
+        vm.prank(address(vault));
+        token0.mint(225405015);
+        IUniswapV3MintCallback(address(vault)).uniswapV3MintCallback(2000, 0, "0x");
+    }
+
+    // Manually call actions that execute would call
+    function test_mimicExecute() public {
+        vm.prank(address(vault));
+        token0.mint(225405015);
+        vm.prank(address(vault));
+        pool.mint(address(vault), 192240, 192300, 1123945184648211, new bytes(0));
+
+        vm.prank(address(vault));
+        pool.burn(192240, 192300, 1123945184648211);
+
+        (, int24 tick,,,,,) = IUniswapV3Pool(address(pool)).slot0();
+        console.log("TICK", uint256(int256(tick)));
+
+        vm.prank(address(vault));
+        token0.mint(1123945184648211);
+        vm.prank(address(vault));
+        token1.mint(1123945185648211);
+
+        vm.prank(address(vault));
+        // pool.mint(address(vault), 92240, 92300, 1123945184648211, new bytes(0));
+        // pool.mint(address(vault), 92199, 92299, 1123945184648211, new bytes(0));
+        pool.mint(address(vault), 92143, 92203, 1000, new bytes(0));
+    }
+
+    function test_execute() public {
+        vm.prank(address(vault));
+        token0.mint(225405015);
+        vm.prank(address(vault));
+        pool.mint(address(vault), 192240, 192300, 1123945184648211, new bytes(0));
+
+        vm.prank(address(vault));
+        token0.mint(9999999999999);
+        vm.prank(address(vault));
+        token1.mint(9999999999999);
+        require(vault.execute(proof, publicSignals), "Execute failed");
     }
 }

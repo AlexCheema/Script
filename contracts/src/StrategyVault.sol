@@ -3,15 +3,26 @@
 pragma solidity ^0.7.6;
 
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
+import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol";
 import "./PlonkVerifier.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract StrategyVault {
+contract StrategyVault is IUniswapV3MintCallback {
     address verifierContractAddress;
     address poolAddress;
+    address token0Address;
+    address token1Address;
 
-    constructor(address _verifierContractAddress, address _poolAddress) {
+    constructor(
+        address _verifierContractAddress,
+        address _poolAddress,
+        address _token0Address,
+        address _token1Address
+    ) {
         verifierContractAddress = _verifierContractAddress;
         poolAddress = _poolAddress;
+        token0Address = _token0Address;
+        token1Address = _token1Address;
     }
 
     function verifyActions(uint256[24] calldata _proof, uint256[36] calldata _pubSignals) public view {
@@ -51,5 +62,14 @@ contract StrategyVault {
         }
 
         return true;
+    }
+
+    function uniswapV3MintCallback(uint256 amount0Owed, uint256 amount1Owed, bytes calldata data) external override {
+        if (amount0Owed > 0) {
+            IERC20(token0Address).transfer(msg.sender, amount0Owed);
+        }
+        if (amount1Owed > 0) {
+            IERC20(token1Address).transfer(msg.sender, amount1Owed);
+        }
     }
 }
