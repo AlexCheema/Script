@@ -6,21 +6,27 @@ import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol";
 import "./PlonkVerifier.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract StrategyVault is IUniswapV3MintCallback {
-    address verifierContractAddress;
-    address poolAddress;
-    address token0Address;
-    address token1Address;
+    using SafeMath for uint256;
+
+    address public verifierContractAddress;
+    address public poolAddress;
+    uint256 public poolTickSpacing;
+    address public token0Address;
+    address public token1Address;
 
     constructor(
         address _verifierContractAddress,
         address _poolAddress,
+        int24 _poolTickSpacing,
         address _token0Address,
         address _token1Address
     ) {
         verifierContractAddress = _verifierContractAddress;
         poolAddress = _poolAddress;
+        poolTickSpacing = uint256(int256(_poolTickSpacing));
         token0Address = _token0Address;
         token1Address = _token1Address;
     }
@@ -36,7 +42,8 @@ contract StrategyVault is IUniswapV3MintCallback {
         // * availableLiquidity (note: we might want to change this for tokenBalanceA and tokenBalanceB)
         (, int24 tick,,,,,) = IUniswapV3Pool(poolAddress).slot0();
         require(tick >= 0, "Cannot convert negative value to Uint256");
-        require(uint256(int256(tick)) == _pubSignals[32], "Tick changed");
+        uint256 alignedTick = uint256(int256(tick)) / poolTickSpacing * poolTickSpacing;
+        require(alignedTick == _pubSignals[32], "Tick changed");
     }
 
     function execute(uint256[24] calldata _proof, uint256[36] calldata _pubSignals) external returns (bool) {
@@ -63,6 +70,13 @@ contract StrategyVault is IUniswapV3MintCallback {
 
         return true;
     }
+
+    // To mint an LP from the vault's address using its owned ERC20 liquidity
+    function mintLP(int24 tickLower, int24 tickUpper, uint128 amount, bytes calldata data) public {
+        IUniswapV3Pool(poolAddress).mint(address(this), tickLower, tickUpper, amount, data);
+    }
+
+    receive() external payable {}
 
     function uniswapV3MintCallback(uint256 amount0Owed, uint256 amount1Owed, bytes calldata data) external override {
         if (amount0Owed > 0) {

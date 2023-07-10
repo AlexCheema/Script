@@ -95,7 +95,8 @@ contract StrategyVaultTest is Test {
         pool.initialize(sqrtPriceX96);
 
         verifier = new PlonkVerifier();
-        vault = new StrategyVault(address(verifier), address(pool), address(token0), address(token1));
+        vault =
+            new StrategyVault(address(verifier), address(pool), pool.tickSpacing(), address(token0), address(token1));
     }
 
     function test_verifyActions() public view {
@@ -106,6 +107,12 @@ contract StrategyVaultTest is Test {
         vm.prank(address(vault));
         token0.mint(225405015);
         IUniswapV3MintCallback(address(vault)).uniswapV3MintCallback(2000, 0, "0x");
+    }
+
+    function test_mint() public {
+        vm.prank(address(vault));
+        token1.mint(100);
+        vault.mintLP(600, 660, 100, new bytes(0));
     }
 
     function test_execute() public {
