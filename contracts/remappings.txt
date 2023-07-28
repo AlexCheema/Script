@@ -1,0 +1,4 @@
+hardhat/=lib/forge-std/src/
+@uniswap/v3-core=lib/v3-core/
+forge-std/=lib/forge-std/src/
+@openzeppelin/=lib/openzeppelin-contracts/

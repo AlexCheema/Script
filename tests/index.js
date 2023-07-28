@@ -3,6 +3,10 @@ const fs = require("fs");
 const { mapActions } = require("./action");
 const { getPoolState } = require("./pool");
 
+function alignNumber(value, interval) {
+    return Math.floor(value / interval) * interval;
+}
+
 async function run() {
     const state = await getPoolState("0x6337b3caf9c5236c7f3d1694410776119edaf9fa", "0x54f3a4f7a85c70c0c0e99f42f92b0ac34a18c534");
 
@@ -10,19 +14,26 @@ async function run() {
         throw new Error(`This strategy only handles up to 1 existing liquidity position but found ${state.positions.length}`);
     }
 
+    const tick = alignNumber(state.tick, state.tickSpacing);
+    const myTick = alignNumber(state.positions?.[0]?.tickLower?.tickIdx ?? 0, state.tickSpacing);
+
     const { proof, publicSignals } = await snarkjs.plonk.fullProve(
         {
-            currentTick: state.tick,
+            currentTick: tick,
             tickSpacing: state.tickSpacing,
 
-            myTick: state.positions?.[0]?.tickLower?.tickIdx ?? "0",
+            myTick: myTick,
             myLiquidity: state.positions?.[0]?.liquidity ?? "0",
             availableLiquidity: "1000000"
         },
         "../circuits/simplemm_js/simplemm.wasm", "../circuits/simplemm_final.zkey"
     );
 
-    console.log(publicSignals)
+    // Convert the data into Solidity calldata that can be sent as a transaction
+    const calldataBlob = await snarkjs.plonk.exportSolidityCallData(proof, publicSignals);
+    const calldata = calldataBlob.split(',');
+    // To be inserted into foundry tests
+    console.log("Calldata parsed (first proof, then public signals)", calldata);
 
     const NUM_ACTIONS = 8;
     const actions = mapActions(publicSignals.slice(0, NUM_ACTIONS * 4));

@@ -3,3 +3,11 @@ build
 .idea
 .vscode
 .DS_Store
+.env
+
+
+# forge
+
+out
+cache
+broadcast/
