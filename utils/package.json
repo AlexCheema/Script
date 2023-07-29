@@ -4,7 +4,7 @@
   "description": "",
   "main": "strategy.js",
   "scripts": {
-    "test": "node strategy.js"
+    "strategy": "node strategy.js"
   },
   "author": "",
   "license": "ISC",
