@@ -1,0 +1,25 @@
+{
+  "name": "script",
+  "version": "1.0.0",
+  "description": "",
+  "main": "utils/strategy.js",
+  "scripts": {
+    "generate": "cd circuits/ && bash generate.sh",
+    "strategy": "cd utils/ && node strategy.js",
+    "test": "forge test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexCheema/Script.git"
+  },
+  "author": "Alex Cheema, Lucas Ege",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AlexCheema/Script/issues"
+  },
+  "homepage": "https://github.com/AlexCheema/Script#readme",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "snarkjs": "^0.7.0"
+  }
+}

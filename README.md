@@ -1,9 +1,10 @@
 # Script
 
 1. Install circom and snarkjs [here](https://docs.circom.io/getting-started/installation/)
-2. Run [generate.sh](./circuits/generate.sh) in [circuits](./circuits)
-3. Run `npm install` in [utils](./utils)
-4. Run `npm run strategy` in [utils](./utils)
+2. Run `npm install`
+3. Run `npm generate` to run [generate.sh](./circuits/generate.sh)
+4. Run `npm run strategy` to run [strategy.js](./utils/strategy.js)
+5. (Optionally) Run `npm run test` to test the [smart contracts](./contracts/)
 
 ## Tradeoffs
 
