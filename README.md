@@ -1,4 +1,25 @@
-# Script
+## Overview
+
+Script is an experimental framework for writing performant trustless trading strategies.
+
+## Problem
+
+Often on-chain actors would like to have their capital managed on-chain.
+Script solves the non-custodial vault trilemma outlined in the [Arrakis v2 docs](https://resources.arrakis.fi/arrakis-v2-protocol/vaults): ![Arrakis Vaults Trilemma](./arrakis-vaults-trilemma.png)
+
+- **Trustless Vaults** implement strategies in smart contracts, so are trustless and low-friction **but** the strategies are public and limited by gas costs.
+- **Managed Vaults** are operated by an off-chain manager so are private, easy to use and not limited by gas **but** require trusting the manager.
+- **Self Managed Vaults** require the user to operate themselves so are private, not limited by gas, don't require trusting anyone **but** are complex to operate.
+
+## Architecture
+
+In Script, trading strategies (or scripts) are themselves zero-knowledge circuits. As a result:
+- Scripts are private, preventing exploitation and protecting IP.
+- Scripts are verified succintly on-chain keeping gas costs low (constant) even for sophisticated strategies.
+
+![Script - Architecture Diagram](./script-architecture.png)
+
+## Getting Started
 
 1. Install circom and snarkjs [here](https://docs.circom.io/getting-started/installation/)
 2. Run `npm install`
@@ -6,15 +27,7 @@
 4. Run `npm run strategy` to run [strategy.js](./utils/strategy.js)
 5. (Optionally) Run `npm run test` to test the [smart contracts](./contracts/)
 
-## Tradeoffs
+## Future work
 
-* We have uint256s all over the place but most things dont need to be uint256, e.g. ticks are int24, actionType is a byte or less
-* We use address(this) in the StrategyVault - would it actually be the smart contract that owns the liquidity positions? If the smart contract owns them, we need some mechanism to collect fees
-* We assume we start with an already active position, since we submit a Burn
-* Might be some issues with positive and negative numbers for "ticks" (int24's) and "amount" (int128) in Mint/Burn. Didn't check this thoroughly. Note that all numbers in the circuit are integers mod some big prime P
-* We don't track price - we only track the tick. tickSpacing might be very large for certain pools so tick may not be granular enough.
-* We currently execute optimistically, meaning if **anything** changes in our inputs we will revert. We probably want some tolerance for certain things, for example if price moves by ±0.01% that's probably fine.
-* The strategy implemented is very simple - it simply tracks the current tick and keeps liquidity on there
-* We don't track inventory - we might end up in a situation where we don't have enough of one token to provide liquidity (although we could control this through "availableLiquidity" - might want to change this to "tokenBalanceA" and "tokenBalanceB")
-* Not sure if `tickSpacing` would actually be a signal. Also should it be public (probably)? But maybe in general for fixed parameters (`tickSpacing` is a fixed parameter for each pool) we could make it a template parameter (see [Templates in Circom](https://docs.circom.io/circom-language/templates-and-components/)).
-* We don't use any non-trivial state right now. We might want to e.g. have volatility as an input. This would require either: an oracle like ChainLink OR something like Axiom that provides trustless aggregation of historical on-chain data OR a uniswap hook that calculates these and provides read access through a smart contract.
+- Write some more sophisticated strategies involving more signals (e.g. all liquidity positions, volatility)
+- Move to a higher level DSL for writing the circuits, e.g. Noir
