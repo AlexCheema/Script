@@ -4,7 +4,6 @@ Script is an experimental framework for writing performant trustless trading str
 
 ## Problem
 
-Often on-chain actors would like to have their capital managed on-chain.
 Script solves the non-custodial vault trilemma outlined in the [Arrakis v2 docs](https://resources.arrakis.fi/arrakis-v2-protocol/vaults): ![Arrakis Vaults Trilemma](./arrakis-vaults-trilemma.png)
 
 - **Trustless Vaults** implement strategies in smart contracts, so are trustless and low-friction **but** the strategies are public and limited by gas costs.
