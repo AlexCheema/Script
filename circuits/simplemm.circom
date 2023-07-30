@@ -12,11 +12,6 @@ template SimpleMM() {
     signal input myLiquidity;
     signal input availableLiquidity;
 
-    // signal input poolTick;
-    // signal input myPositions;
-    // signal input tokenABalance;
-    // signal input tokenBBalance;
-
     signal output actions[8][4];
 
     assert(currentTick != myTick);
